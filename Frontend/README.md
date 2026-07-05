@@ -32,7 +32,8 @@ which mode you're in.
 | PATCH  | `/api/attendance/:internId`       | `{ date, status }` — update today's attendance |
 | POST   | `/api/leave`                      | `{ internId, date, type, reason, remarks }` |
 | POST   | `/api/certificates/:internId/generate` | Marks/generates a certificate |
-| GET    | `/api/reports/:type?format=csv\|pdf\|excel` | Downloads an attendance/certificate report |
+| GET    | `/api/reports/:type?format=csv\|pdf\|excel` | Downloads a report (`:type` = `attendance`, `time`, `task`, `performance`, `batch-summary`, `leave`, `certificates`) |
+| GET    | `/api/attendance/history?domain=&batch=&internId=` | Returns the historical leave/absence log |
 
 This matches the **Users** and **Attendance** tables from the project's proposed
 database schema. Auth uses a Bearer token (JWT), stored in `localStorage` as
@@ -53,6 +54,8 @@ src/
     Dashboard.jsx
     LeaveManagement.jsx      # full leave/attendance workflow
     CertificateManagement.jsx# eligibility + certificate generation
+    AttendanceManagement.jsx # domain/batch/intern attendance + history
+    ReportGeneration.jsx     # report type selection, preview, export/print
     GenericModule.jsx        # placeholder for not-yet-built modules
     Modals.jsx
 ```
@@ -61,6 +64,21 @@ src/
 
 - Certificate eligibility rule (from the module doc): attendance ≥ 80%, all tasks
   completed, all assignments submitted.
-- Only **Dashboard**, **Leave Management**, and **Certificate Management** are fully
-  built; every other module from the module sheet has a sidebar entry and a
-  "coming soon" placeholder in the same shell, ready to wire up the same way.
+- **Dashboard**, **Leave Management**, **Certificate Management**, **Attendance
+  Management**, and **Report Generation** are fully built; every other module
+  from the module sheet has a sidebar entry and a "coming soon" placeholder in
+  the same shell, ready to wire up the same way.
+
+### Attendance Management (mentor domain)
+
+Matches the workflow: *Select Domain → Select Batch → Select Individual Intern →
+Mark/Edit Attendance → Save*. Tabs cover Daily marking, Weekly/Monthly views,
+Batch-wise Summary, and Attendance History (a log of past leave/absence entries).
+
+### Report Generation (mentor domain)
+
+Matches the workflow: *Select Domain → Select Batch → Select Individual Intern →
+Choose Report Type → Generate → Export/Print*. Report types: Attendance Report,
+Internship Time Report, Task Progress Report, Performance Report, and
+Batch-wise Summary. Export PDF/Excel call `GET /api/reports/:type?format=...`;
+Print uses the browser's native print dialog.

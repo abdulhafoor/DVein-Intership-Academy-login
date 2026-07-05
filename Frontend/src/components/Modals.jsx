@@ -2,18 +2,14 @@ import { useState, useEffect } from 'react';
 
 export function LeaveModal({ intern, onCancel, onSave }) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [type, setType] = useState('Casual Leave');
+  const [type, setType] = useState('Sick Leave');
   const [reason, setReason] = useState('');
   const [remarks, setRemarks] = useState('');
 
   useEffect(() => {
     if (intern) {
       setDate(new Date().toISOString().slice(0, 10));
-      setType(
-        intern.leaveType && intern.leaveType !== '-'
-          ? intern.leaveType
-          : 'Casual Leave'
-      );
+      setType(intern.leaveType && intern.leaveType !== '-' ? intern.leaveType : 'Sick Leave');
       setReason(intern.reason || '');
       setRemarks('');
     }
@@ -33,14 +29,10 @@ export function LeaveModal({ intern, onCancel, onSave }) {
         </div>
         <div className="field">
           <label>Leave Type</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-          >
-            <option value="Casual Leave">Casual Leave</option>
-            <option value="Emergency Leave">Emergency Leave</option>
-            <option value="Personal Leave">Personal Leave</option>
-            <option value="Sick Leave">Sick Leave</option>
+          <select value={type} onChange={(e) => setType(e.target.value)}>
+            <option>Sick Leave</option>
+            <option>Casual Leave</option>
+            <option>Emergency Leave</option>
           </select>
         </div>
         <div className="field">

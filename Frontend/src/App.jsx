@@ -5,10 +5,12 @@ import Topbar from './components/Topbar.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import LeaveManagement from './components/LeaveManagement.jsx';
 import CertificateManagement from './components/CertificateManagement.jsx';
+import AttendanceManagement from './components/AttendanceManagement.jsx';
+import ReportGeneration from './components/ReportGeneration.jsx';
 import GenericModule from './components/GenericModule.jsx';
 import { fetchInterns, logout as apiLogout } from './api.js';
 
-const BUILT_VIEWS = ['dashboard', 'leave', 'certificate'];
+const BUILT_VIEWS = ['dashboard', 'leave', 'certificate', 'attendance', 'report'];
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -60,6 +62,8 @@ export default function App() {
           {view === 'dashboard' && <Dashboard interns={interns} user={user} onNavigate={setView} />}
           {view === 'leave' && <LeaveManagement interns={interns} setInterns={setInterns} showToast={showToast} />}
           {view === 'certificate' && <CertificateManagement interns={interns} setInterns={setInterns} showToast={showToast} />}
+          {view === 'attendance' && <AttendanceManagement interns={interns} setInterns={setInterns} showToast={showToast} />}
+          {view === 'report' && <ReportGeneration interns={interns} showToast={showToast} />}
           {!BUILT_VIEWS.includes(view) && <GenericModule viewId={view} />}
         </div>
       </div>

@@ -143,6 +143,7 @@ select.status-select{ padding:6px 10px; border-radius:8px; font-size:12.5px; fon
 .pill.leave{ background:var(--orange-light); color:var(--orange); }
 .pill.eligible{ background:var(--green-light); color:var(--green); }
 .pill.noteligible{ background:var(--red-light); color:var(--red); }
+.pill.neutral{ background:var(--primary-light); color:var(--primary); }
 
 .mini-bar{ width:70px; height:6px; border-radius:6px; background:var(--border); overflow:hidden; display:inline-block; vertical-align:middle; margin-right:6px; }
 .mini-bar > div{ height:100%; border-radius:6px; }

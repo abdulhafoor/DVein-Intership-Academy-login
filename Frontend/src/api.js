@@ -11,7 +11,7 @@
 // development. Swap API_BASE in .env (VITE_API_URL) once your backend is live.
 // ---------------------------------------------------------------------------
 
-import { mockInterns } from './data/mockInterns.js';
+import { mockInterns, mockAttendanceHistory } from './data/mockInterns.js';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -96,6 +96,16 @@ export async function submitLeave(payload) {
   } catch (err) {
     console.warn('[api] submitLeave: not connected, saved locally only —', err.message);
     return { data: null, live: false };
+  }
+}
+
+// Expected backend: GET /api/attendance/history?domain=&batch=&internId=
+export async function fetchAttendanceHistory() {
+  try {
+    return { data: await request('/attendance/history'), live: true };
+  } catch (err) {
+    console.warn('[api] fetchAttendanceHistory: using mock data —', err.message);
+    return { data: mockAttendanceHistory, live: false };
   }
 }
 
