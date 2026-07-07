@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Resource Library — DVein Innovations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebarMount"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">Module 02</div>
+        <h1>Resource Library</h1>
+        <p class="sub">Shared reading, videos and templates for every cohort.</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" id="openCreateResource">+ Add Resource</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>All Resources</h3>
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search by title or description…" />
+          <select id="categoryFilter"><option value="">All categories</option></select>
+          <select id="typeFilter">
+            <option value="">All types</option>
+            <option value="link">Link</option>
+            <option value="pdf">PDF</option>
+            <option value="video">Video</option>
+            <option value="doc">Doc</option>
+            <option value="slide">Slide</option>
+          </select>
+          <select id="batchFilter"><option value="">All batches</option></select>
+        </div>
+      </div>
+
+      <div class="resource-grid" id="resourceGrid"></div>
+      <div class="empty-state" id="resourceEmptyState" style="display:none;">
+        <div class="glyph">＋</div>
+        No resources match your filters yet.
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create / Edit Resource Modal -->
+<div class="modal-overlay" id="resourceModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="resourceModalTitle">Add Resource</h3>
+      <button class="modal-close" id="closeResourceModal">&times;</button>
+    </div>
+    <form id="resourceForm">
+      <input type="hidden" id="resourceId" />
+      <div class="field">
+        <label for="resourceTitle">Title</label>
+        <input type="text" id="resourceTitle" placeholder="Git & GitHub Crash Course" required />
+      </div>
+      <div class="field">
+        <label for="resourceDescription">Description</label>
+        <textarea id="resourceDescription" rows="3" placeholder="One or two lines about what this covers"></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="resourceCategory">Category</label>
+          <input type="text" id="resourceCategory" list="categoryOptions" placeholder="Onboarding / Engineering / Data" />
+          <datalist id="categoryOptions"></datalist>
+        </div>
+        <div class="field">
+          <label for="resourceType">Type</label>
+          <select id="resourceType">
+            <option value="link">Link</option>
+            <option value="pdf">PDF</option>
+            <option value="video">Video</option>
+            <option value="doc">Doc</option>
+            <option value="slide">Slide</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="resourceUrl">URL</label>
+        <input type="url" id="resourceUrl" placeholder="https://example.com/resource" required />
+      </div>
+      <div class="field">
+        <label for="resourceBatch">Linked Batch (optional)</label>
+        <select id="resourceBatch"><option value="">Not linked to a specific batch</option></select>
+      </div>
+      <button type="submit" class="btn btn-primary" id="resourceSubmitBtn" style="width:100%;">Save Resource</button>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/resources.js"></script>
+</body>
+</html>
