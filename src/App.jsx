@@ -7,10 +7,12 @@ import LeaveManagement from './components/LeaveManagement.jsx';
 import CertificateManagement from './components/CertificateManagement.jsx';
 import SessionScheduler from './components/SessionScheduler.jsx';
 import AIMentor from './components/AIMentor.jsx';
+import TechManagement from './components/TechManagement.jsx';
+import Announcements from './components/Announcements.jsx';
 import GenericModule from './components/GenericModule.jsx';
 import { fetchInterns, logout as apiLogout } from './api.js';
 
-const BUILT_VIEWS = ['dashboard', 'leave', 'certificate', 'scheduler', 'mentor'];
+const BUILT_VIEWS = ['dashboard', 'leave', 'certificate', 'tech', 'announce', 'scheduler', 'mentor'];
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -62,6 +64,8 @@ export default function App() {
           {view === 'dashboard' && <Dashboard interns={interns} user={user} onNavigate={setView} />}
           {view === 'leave' && <LeaveManagement interns={interns} setInterns={setInterns} showToast={showToast} />}
           {view === 'certificate' && <CertificateManagement interns={interns} setInterns={setInterns} showToast={showToast} />}
+          {view === 'tech' && <TechManagement />}
+          {view === 'announce' && <Announcements />}
           {view === 'scheduler' && <SessionScheduler user={user} onNavigate={setView} />}
           {view === 'mentor' && <AIMentor user={user} onNavigate={setView} />}
           {!BUILT_VIEWS.includes(view) && <GenericModule viewId={view} />}
