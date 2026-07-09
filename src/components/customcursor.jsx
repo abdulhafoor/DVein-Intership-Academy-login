@@ -1,208 +1,234 @@
 import { useEffect, useRef, useState } from "react";
 
-/**
- * MetaballCursor
- * -------------------------------------------------------------------------
- * A two-part liquid cursor for white/blue themed sites:
- *   - a small WHITE dot that tracks the pointer tightly
- *   - a medium BLUE ball that trails behind it with looser easing
- * An SVG "goo" filter merges the two into a single blob when they get
- * close, giving the classic metaball look.
- *
- * Adaptive behavior (the part that makes it feel alive):
- *   - Over BLUE regions of the page  -> white dot grows, blue ball shrinks
- *   - Over WHITE regions of the page -> blue ball grows, white dot shrinks
- *   - Hovering an interactive element -> both balls scale up together
- *   - Clicking -> quick squash for tactile feedback
- *
- * Drop <MetaballCursor /> once near the root of your app. It reads the
- * background color under the pointer every frame via elementFromPoint,
- * so it works on any section without extra markup - just make sure your
- * "blue" sections actually set a blue background-color (not just an
- * image) somewhere in their ancestor chain.
- */
-export default function MetaballCursor() {
+const HOVER_SELECTOR = [
+  "a",
+  "button",
+  "input",
+  "select",
+  "textarea",
+  "summary",
+  "[role='button']",
+  "[tabindex]:not([tabindex='-1'])",
+  "[data-cursor-hover]"
+].join(", ");
+
+const getInitialPointer = () => {
+  if (typeof window === "undefined") {
+    return { x: 0, y: 0 };
+  }
+
+  return {
+    x: window.innerWidth / 2,
+    y: window.innerHeight / 2
+  };
+};
+
+export default function CustomCursor() {
   const wrapRef = useRef(null);
   const dotRef = useRef(null);
   const ballRef = useRef(null);
+  const frameRef = useRef(0);
+  const pointerRef = useRef({
+    targetX: getInitialPointer().x,
+    targetY: getInitialPointer().y,
+    ballX: getInitialPointer().x,
+    ballY: getInitialPointer().y
+  });
+
+  const [enabled, setEnabled] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const [isBlueZone, setIsBlueZone] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
 
   useEffect(() => {
-    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
-    if (isTouchDevice) return;
+    const mediaQuery = window.matchMedia("(pointer: fine) and (min-width: 901px)");
+
+    const syncEnabledState = () => {
+      setEnabled(mediaQuery.matches);
+    };
+
+    syncEnabledState();
+    mediaQuery.addEventListener("change", syncEnabledState);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncEnabledState);
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.classList.toggle("mbc-enabled", enabled);
+
+    return () => {
+      document.body.classList.remove("mbc-enabled");
+    };
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled) {
+      cancelAnimationFrame(frameRef.current);
+      return undefined;
+    }
 
     const dot = dotRef.current;
     const ball = ballRef.current;
     const wrap = wrapRef.current;
+    const pointer = pointerRef.current;
 
-    // Sizes (px)
-    const DOT_SMALL = 9;
-    const DOT_BIG = 17;
-    const BALL_SMALL = 10;
-    const BALL_BIG = 15;
-
-    // Easing factors (0-1, higher = snappier)
-    const BALL_POS_EASE = 0.05;
-    const SIZE_EASE = 0.12;
-
-    // Luminance below this = "blue/dark" area, above = "white/light" area
-    const LUM_THRESHOLD = 0.6;
-
-    let mouseX = window.innerWidth / 2;
-    let mouseY = window.innerHeight / 2;
-    let ballX = mouseX;
-    let ballY = mouseY;
-
-    let currentBallSize = BALL_SMALL;
-    let currentDotSize = DOT_SMALL;
-
-    let targetLum = 1;
-    let hoverScale = 1;
-    let pressScale = 1;
-
-    let rafId;
-    let visible = false;
-
-    const showCursor = () => {
-      if (!visible) {
-        visible = true;
-        wrap.style.opacity = "1";
-      }
-    };
-
-    // Walk up the DOM from the point under the cursor until we find an
-    // element with an actual background-color set, then convert that to
-    // a 0-1 luminance value.
-    const sampleLuminanceAt = (x, y) => {
-      const el = document.elementFromPoint(x, y);
-      let node = el;
-      let colorStr = null;
+    const getLuminanceAtPoint = (clientX, clientY) => {
+      const target = document.elementFromPoint(clientX, clientY);
+      let node = target;
 
       while (node && node !== document.documentElement) {
-        const bg = getComputedStyle(node).backgroundColor;
-        if (bg && !/rgba?\(0,\s*0,\s*0,\s*0\)/.test(bg) && bg !== "transparent") {
-          colorStr = bg;
-          break;
+        const backgroundColor = window.getComputedStyle(node).backgroundColor;
+        const isTransparent =
+          !backgroundColor ||
+          backgroundColor === "transparent" ||
+          /rgba?$0,\s*0,\s*0,\s*0$/.test(backgroundColor);
+
+        if (!isTransparent) {
+          const values = backgroundColor.match(/[\d.]+/g);
+          if (!values) return 1;
+
+          const [red, green, blue] = values.map(Number);
+          return (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
         }
+
         node = node.parentElement;
       }
-      if (!colorStr) {
-        colorStr = getComputedStyle(document.body).backgroundColor || "rgb(255,255,255)";
-      }
-      const nums = colorStr.match(/[\d.]+/g);
-      if (!nums) return 1;
-      const [r, g, b] = nums.map(Number);
-      return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+      return 1;
     };
 
-    const handleMouseMove = (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      showCursor();
-      targetLum = sampleLuminanceAt(mouseX, mouseY);
+    const updateContext = (clientX, clientY) => {
+      pointer.targetX = clientX;
+      pointer.targetY = clientY;
 
-      const hovered = document.elementFromPoint(mouseX, mouseY);
-      hoverScale = hovered?.closest("[data-cursor-hover]") ? 1.4 : 1;
+      const hoveredElement = document.elementFromPoint(clientX, clientY);
+      setIsHovering(Boolean(hoveredElement?.closest(HOVER_SELECTOR)));
+      setIsBlueZone(getLuminanceAtPoint(clientX, clientY) < 0.62);
     };
-
-    const handleMouseLeave = () => {
-      wrap.style.opacity = "0";
-      visible = false;
-    };
-
-    const handleMouseDown = () => (pressScale = 0.82);
-    const handleMouseUp = () => (pressScale = 1);
-
-    const lerp = (a, b, t) => a + (b - a) * t;
 
     const animate = () => {
-      ballX = lerp(ballX, mouseX, BALL_POS_EASE);
-      ballY = lerp(ballY, mouseY, BALL_POS_EASE);
+      pointer.ballX += (pointer.targetX - pointer.ballX) * 0.1;
+      pointer.ballY += (pointer.targetY - pointer.ballY) * 0.1;
 
-      const isBlueArea = targetLum < LUM_THRESHOLD;
+      if (dot) {
+        dot.style.transform = `translate3d(${pointer.targetX}px, ${pointer.targetY}px, 0) translate(-50%, -50%)`;
+      }
 
-      const targetDotSize = (isBlueArea ? DOT_BIG : DOT_SMALL) * hoverScale * pressScale;
-      const targetBallSize = (isBlueArea ? BALL_SMALL : BALL_BIG) * hoverScale * pressScale;
+      if (ball) {
+        ball.style.transform = `translate3d(${pointer.ballX}px, ${pointer.ballY}px, 0) translate(-50%, -50%)`;
+      }
 
-      currentDotSize = lerp(currentDotSize, targetDotSize, SIZE_EASE);
-      currentBallSize = lerp(currentBallSize, targetBallSize, SIZE_EASE);
-
-      const isInteractive = hoverScale > 1.1 || pressScale < 1;
-
-      dot.style.width = `${currentDotSize}px`;
-      dot.style.height = `${currentDotSize}px`;
-      dot.style.border = "none";
-      dot.style.outline = "1.5px solid rgba(59,130,246,0.95)";
-      dot.style.outlineOffset = "1.5px";
-      dot.style.background = isInteractive
-        ? "linear-gradient(120deg, rgba(255,255,255,0.98) 0%, rgba(239,246,255,0.95) 35%, rgba(191,219,254,0.95) 70%, rgba(255,255,255,0.98) 100%)"
-        : "radial-gradient(circle at 30% 30%, #ffffff 0%, #f8fbff 45%, #dbeafe 100%)";
-      dot.style.backgroundSize = isInteractive ? "220% 220%" : "100% 100%";
-      dot.style.backgroundPosition = "center";
-      dot.style.animation = isInteractive ? "cursor-shimmer 1.2s linear infinite" : "none";
-      dot.style.boxShadow = isInteractive
-        ? "0 0 0 1px rgba(255,255,255,0.95), 0 0 16px rgba(255,255,255,0.95), 0 0 28px rgba(37,99,235,0.35)"
-        : "0 0 0 1px rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.8), 0 0 22px rgba(37,99,235,0.2)";
-      dot.style.transform = `translate3d(${mouseX - currentDotSize / 2}px, ${
-        mouseY - currentDotSize / 2
-      }px, 0)`;
-
-      ball.style.width = `${currentBallSize}px`;
-      ball.style.height = `${currentBallSize}px`;
-      ball.style.border = "1px solid rgba(255,255,255,0.9)";
-      ball.style.background = isInteractive
-        ? "linear-gradient(120deg, rgba(191,219,254,0.95) 0%, rgba(59,130,246,0.98) 35%, rgba(37,99,235,1) 70%, rgba(191,219,254,0.95) 100%)"
-        : "radial-gradient(circle at 30% 30%, #93c5fd 0%, #3b82f6 45%, #1d4ed8 100%)";
-      ball.style.backgroundSize = isInteractive ? "220% 220%" : "100% 100%";
-      ball.style.backgroundPosition = "center";
-      ball.style.animation = isInteractive ? "cursor-shimmer 1.2s linear infinite" : "none";
-      ball.style.boxShadow = isInteractive
-        ? "0 0 0 1px rgba(255,255,255,0.8), 0 0 18px rgba(59,130,246,0.35), 0 0 34px rgba(255,255,255,0.2)"
-        : "0 0 0 1px rgba(255,255,255,0.75), 0 0 12px rgba(59,130,246,0.24)";
-      ball.style.transform = `translate3d(${ballX - currentBallSize / 2}px, ${
-        ballY - currentBallSize / 2
-      }px, 0)`;
-
-      rafId = requestAnimationFrame(animate);
+      frameRef.current = window.requestAnimationFrame(animate);
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
-    document.addEventListener("mouseleave", handleMouseLeave);
-    rafId = requestAnimationFrame(animate);
+    const handlePointerMove = (event) => {
+      if (!wrap) return;
+      setVisible(true);
+      wrap.style.opacity = "1";
+      updateContext(event.clientX, event.clientY);
+    };
+
+    const handlePointerEnter = (event) => {
+      if (!wrap) return;
+      setVisible(true);
+      wrap.style.opacity = "1";
+      updateContext(event.clientX, event.clientY);
+    };
+
+    const handlePointerLeave = () => {
+      if (!wrap) return;
+      setVisible(false);
+      setIsHovering(false);
+      setIsPressed(false);
+      wrap.style.opacity = "0";
+    };
+
+    const handlePointerDown = () => {
+      setIsPressed(true);
+    };
+
+    const handlePointerUp = () => {
+      setIsPressed(false);
+    };
+
+    frameRef.current = window.requestAnimationFrame(animate);
+
+    window.addEventListener("pointermove", handlePointerMove);
+    document.addEventListener("pointerenter", handlePointerEnter);
+    document.addEventListener("pointerleave", handlePointerLeave);
+    window.addEventListener("pointerdown", handlePointerDown);
+    window.addEventListener("pointerup", handlePointerUp);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("mouseleave", handleMouseLeave);
-      cancelAnimationFrame(rafId);
+      cancelAnimationFrame(frameRef.current);
+      window.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerenter", handlePointerEnter);
+      document.removeEventListener("pointerleave", handlePointerLeave);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, []);
+  }, [enabled]);
 
-  return (
-    <div ref={wrapRef} className="mbc-wrap">
-      <svg width="0" height="0" style={{ position: "absolute" }}>
-        <defs>
-          <filter id="mbc-goo">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
-            <feColorMatrix
-              in="blur"
-              mode="matrix"
-              values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -12"
-              result="goo"
-            />
-          </filter>
-        </defs>
-      </svg>
+  if (!enabled) {
+    return null;
+  }
 
-      <div className="mbc-goo-group">
-        <div ref={ballRef} className="mbc-ball" />
+  const wrapClassName = [
+    "mbc-wrap",
+    visible ? "is-visible" : "",
+    isBlueZone ? "is-blue-zone" : "is-light-zone",
+    isHovering ? "is-hovering" : "",
+    isPressed ? "is-pressed" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+    return (
+    <>
+      <div ref={wrapRef} className={wrapClassName} aria-hidden="true">
+        <svg width="0" height="0" style={{ position: "absolute" }}>
+          <defs>
+            <filter id="mbc-goo">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+              <feColorMatrix
+                in="blur"
+                mode="matrix"
+                values="1 0 0 0 0
+                        0 1 0 0 0
+                        0 0 1 0 0
+                        0 0 0 24 -11"
+                result="goo"
+              />
+              <feBlend in="SourceGraphic" in2="goo" />
+            </filter>
+          </defs>
+        </svg>
+
+        <div className="mbc-goo-group">
+          <div ref={ballRef} className="mbc-ball" />
+          <div ref={dotRef} className="mbc-dot" />
+        </div>
       </div>
-      <div ref={dotRef} className="mbc-dot" />
 
       <style>{`
-        * { cursor: none !important; }
+        body.mbc-enabled,
+        body.mbc-enabled * {
+          cursor: none !important;
+        }
+
+        @media (pointer: coarse), (max-width: 900px) {
+          body.mbc-enabled,
+          body.mbc-enabled * {
+            cursor: auto !important;
+          }
+
+          .mbc-wrap {
+            display: none !important;
+          }
+        }
 
         .mbc-wrap {
           position: fixed;
@@ -210,7 +236,11 @@ export default function MetaballCursor() {
           pointer-events: none;
           z-index: 9999;
           opacity: 0;
-          transition: opacity 0.25s ease;
+          transition: opacity 0.18s ease;
+        }
+
+        .mbc-wrap.is-visible {
+          opacity: 1;
         }
 
         .mbc-goo-group {
@@ -219,138 +249,89 @@ export default function MetaballCursor() {
           filter: url(#mbc-goo);
         }
 
-        @keyframes cursor-shimmer {
-          0% { background-position: 200% 50%; }
-          100% { background-position: -200% 50%; }
-        }
-
+        .mbc-dot,
         .mbc-ball {
           position: absolute;
           top: 0;
           left: 0;
-          border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, #93c5fd 0%, #3b82f6 45%, #1d4ed8 100%);
-          box-shadow: 0 0 0 1px rgba(255,255,255,0.75), 0 0 12px rgba(59,130,246,0.24);
-          will-change: transform, width, height;
-          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+          border-radius: 999px;
+          transform: translate3d(-50%, -50%, 0);
+          will-change: transform, width, height, background, box-shadow;
+          transition:
+            width 220ms ease,
+            height 220ms ease,
+            background 220ms ease,
+            box-shadow 220ms ease,
+            opacity 220ms ease,
+            filter 220ms ease;
         }
 
         .mbc-dot {
-          position: absolute;
-          top: 0;
-          left: 0;
-          border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f8fbff 45%, #dbeafe 100%);
-          box-shadow: 0 0 0 1px rgba(255,255,255,0.9), 0 0 12px rgba(255,255,255,0.8), 0 0 22px rgba(37,99,235,0.2);
-          border: none;
-          outline: 1px solid rgba(37,99,235,0.95);
-          outline-offset: 1px;
-          will-change: transform, width, height;
+          width: 8px;
+          height: 8px;
           z-index: 2;
-          transition: box-shadow 0.2s ease, border-color 0.2s ease;
+          background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f8fbff 48%, #dbeafe 100%);
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.92),
+            0 0 10px rgba(255,255,255,0.72),
+            0 0 16px rgba(37,99,235,0.16);
+        }
+
+        .mbc-ball {
+          width: 24px;
+          height: 24px;
+          z-index: 1;
+          background: radial-gradient(circle at 30% 30%, #93c5fd 0%, #3b82f6 46%, #1d4ed8 100%);
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.65),
+            0 0 14px rgba(59,130,246,0.22),
+            0 0 24px rgba(59,130,246,0.12);
+        }
+
+        .mbc-wrap.is-blue-zone .mbc-dot {
+          width: 16px;
+          height: 16px;
+          background: radial-gradient(circle at 30% 30%, #ffffff 0%, #f7fbff 52%, #dbeafe 100%);
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.95),
+            0 0 16px rgba(255,255,255,0.82),
+            0 0 24px rgba(96,165,250,0.16);
+        }
+
+        .mbc-wrap.is-blue-zone .mbc-ball {
+          width: 12px;
+          height: 12px;
+          background: radial-gradient(circle at 30% 30%, #7dd3fc 0%, #3b82f6 52%, #2563eb 100%);
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.45),
+            0 0 12px rgba(59,130,246,0.2);
+        }
+
+        .mbc-wrap.is-light-zone .mbc-dot {
+          width: 8px;
+          height: 8px;
+        }
+
+        .mbc-wrap.is-light-zone .mbc-ball {
+          width: 28px;
+          height: 28px;
+          background: radial-gradient(circle at 30% 30%, #93c5fd 0%, #2563eb 48%, #1d4ed8 100%);
+          box-shadow:
+            0 0 0 1px rgba(255,255,255,0.72),
+            0 0 16px rgba(59,130,246,0.22),
+            0 0 28px rgba(37,99,235,0.12);
+        }
+
+        .mbc-wrap.is-hovering .mbc-dot {
+          width: 20px;
+          height: 20px;
+        }
+
+        .mbc-wrap.is-hovering .mbc-ball {
+          width: 36px;
+          height: 36px;
         }
       `}</style>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ *
- *  DEMO PAGE — shows the cursor over a white section and a blue      *
- *  section, plus a few hoverable elements. Delete everything below   *
- *  this line and keep only MetaballCursor for your own app; just     *
- *  render <MetaballCursor /> once near the root (e.g. in App.jsx).   *
- * ------------------------------------------------------------------ */
-export function CursorDemo() {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div style={{ fontFamily: "'Söhne', Inter, system-ui, sans-serif" }}>
-      <MetaballCursor />
-
-      <section
-        style={{
-          minHeight: "100vh",
-          background: "#ffffff",
-          color: "#0f172a",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 24,
-          padding: 32,
-        }}
-      >
-        <span style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#3b82f6", fontWeight: 600 }}>
-          White region
-        </span>
-        <h1 style={{ fontSize: 40, margin: 0, textAlign: "center", maxWidth: 560 }}>
-          Move around — the blue ball grows here, the white dot shrinks
-        </h1>
-        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
-          <button
-            data-cursor-hover
-            onClick={() => setCount((c) => c + 1)}
-            style={{
-              padding: "14px 28px",
-              borderRadius: 999,
-              border: "none",
-              background: "#2563eb",
-              color: "white",
-              fontSize: 15,
-              fontWeight: 600,
-            }}
-          >
-            Clicked {count} times
-          </button>
-          <button
-            data-cursor-hover
-            style={{
-              padding: "14px 28px",
-              borderRadius: 999,
-              border: "1px solid #93c5fd",
-              background: "transparent",
-              color: "#1d4ed8",
-              fontSize: 15,
-              fontWeight: 600,
-            }}
-          >
-            Hover me too
-          </button>
-        </div>
-      </section>
-
-      <section
-        style={{
-          minHeight: "100vh",
-          background: "#1d4ed8",
-          color: "white",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 24,
-          padding: 32,
-        }}
-      >
-        <span style={{ fontSize: 13, letterSpacing: "0.12em", textTransform: "uppercase", color: "#bfdbfe", fontWeight: 600 }}>
-          Blue region
-        </span>
-        <h1 style={{ fontSize: 40, margin: 0, textAlign: "center", maxWidth: 560 }}>
-          In here the white dot grows and the blue ball shrinks
-        </h1>
-        <div
-          data-cursor-hover
-          style={{
-            padding: "20px 32px",
-            borderRadius: 16,
-            background: "rgba(255,255,255,0.12)",
-            border: "1px solid rgba(255,255,255,0.3)",
-            fontSize: 15,
-          }}
-        >
-          This card is a hover target too — both balls scale up together
-        </div>
-      </section>
-    </div>
+    </>
   );
 }
