@@ -8,6 +8,7 @@ import CertificateManagement from './components/CertificateManagement.jsx';
 import SessionScheduler from './components/SessionScheduler.jsx';
 import AIMentor from './components/AIMentor.jsx';
 import GenericModule from './components/GenericModule.jsx';
+import CustomCursor from './components/CustomCursor.jsx';
 import { fetchInterns, logout as apiLogout } from './api.js';
 
 const BUILT_VIEWS = ['dashboard', 'leave', 'certificate', 'scheduler', 'mentor'];
@@ -46,11 +47,18 @@ export default function App() {
   }
 
   if (!user) {
-    return <Login onLogin={handleLogin} />;
+    return (
+      <>
+        <CustomCursor />
+        <Login onLogin={handleLogin} />
+      </>
+    );
   }
 
   return (
-    <div className="shell">
+    <>
+      <CustomCursor />
+      <div className="shell">
       <Sidebar
         activeView={view}
         onNavigate={setView}
@@ -68,6 +76,7 @@ export default function App() {
         </div>
       </div>
       {toastMsg && <div className="toast show">{toastMsg}</div>}
-    </div>
+      </div>
+    </>
   );
 }
