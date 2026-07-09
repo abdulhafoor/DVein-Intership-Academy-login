@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Batch Management — DVein Innovations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+<div class="app-shell">
+  <div id="sidebarMount"></div>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="eyebrow">Module 01</div>
+        <h1>Batch Management</h1>
+        <p class="sub">Create, track and update every internship cohort.</p>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" id="openCreateBatch">+ New Batch</button>
+      </div>
+    </div>
+
+    <div class="stat-grid" id="statGrid">
+      <div class="stat-card"><div class="label">Total Batches</div><div class="value" id="statBatches">—</div></div>
+      <div class="stat-card"><div class="label">Ongoing</div><div class="value" id="statOngoing">—</div></div>
+      <div class="stat-card"><div class="label">Upcoming</div><div class="value" id="statUpcoming">—</div></div>
+      <div class="stat-card"><div class="label">Interns Enrolled</div><div class="value" id="statEnrolled">—</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h3>All Batches</h3>
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search by name, code or mentor…" />
+          <select id="statusFilter">
+            <option value="">All statuses</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <table class="ledger" id="batchTable">
+        <thead>
+          <tr>
+            <th>Code</th><th>Batch Name</th><th>Track</th><th>Mentor</th>
+            <th>Timeline</th><th>Enrolled / Capacity</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="batchTableBody"></tbody>
+      </table>
+      <div class="empty-state" id="batchEmptyState" style="display:none;">
+        <div class="glyph">＋</div>
+        No batches match your filters yet.
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create / Edit Batch Modal -->
+<div class="modal-overlay" id="batchModalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="batchModalTitle">New Batch</h3>
+      <button class="modal-close" id="closeBatchModal">&times;</button>
+    </div>
+    <form id="batchForm">
+      <input type="hidden" id="batchId" />
+      <div class="field-row">
+        <div class="field">
+          <label for="batchCode">Batch Code</label>
+          <input type="text" id="batchCode" placeholder="IA-2026-03" required />
+        </div>
+        <div class="field">
+          <label for="batchStatus">Status</label>
+          <select id="batchStatus">
+            <option value="upcoming">Upcoming</option>
+            <option value="ongoing">Ongoing</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="batchName">Batch Name</label>
+        <input type="text" id="batchName" placeholder="Full Stack Web Development" required />
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="batchTrack">Track</label>
+          <input type="text" id="batchTrack" placeholder="Web / Data / Cloud" />
+        </div>
+        <div class="field">
+          <label for="batchMentor">Mentor</label>
+          <input type="text" id="batchMentor" placeholder="Mentor name" />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="batchStart">Start Date</label>
+          <input type="date" id="batchStart" required />
+        </div>
+        <div class="field">
+          <label for="batchEnd">End Date</label>
+          <input type="date" id="batchEnd" required />
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="batchCapacity">Capacity</label>
+          <input type="number" id="batchCapacity" min="1" placeholder="25" />
+        </div>
+        <div class="field">
+          <label for="batchEnrolled">Currently Enrolled</label>
+          <input type="number" id="batchEnrolled" min="0" placeholder="0" />
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary" id="batchSubmitBtn" style="width:100%;">Save Batch</button>
+    </form>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/layout.js"></script>
+<script src="js/batches.js"></script>
+</body>
+</html>
