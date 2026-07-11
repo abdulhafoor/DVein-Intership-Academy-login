@@ -1,123 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  sendMessage,
+  getProgress,
+  getAssessments,
+  getRecommendations,
+  submitAssessment,
+} from "../services/mentor";
 
-/**
- * ---------------------------------------------------------------------------
- * DEMO-MODE DATA LAYER
- * ---------------------------------------------------------------------------
- * The rest of this app runs in "Demo mode (backend offline)", but AIMentor.jsx
- * was still calling the real service functions in services/mentor.js
- * (getProgress, getAssessments, getRecommendations, sendMessage,
- * submitAssessment), which all try to hit a live API and fail with
- * "Failed to fetch".
- *
- * The fix: give this component its own local, in-memory "mock backend" that
- * mimics those service functions (same shape, same async signature, small
- * artificial delay) so the UI always has data to render, with no network
- * calls at all. If you later bring a real backend online, just swap the
- * imports back to services/mentor.js — the component logic doesn't change.
- * ---------------------------------------------------------------------------
- */
-
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-const MOCK_PROGRESS = {
-  topics: ["React Hooks", "REST APIs", "Database Design", "Unit Testing"],
-  completedTopics: ["HTML & CSS", "JavaScript Basics", "Git & GitHub", "Node.js Fundamentals"],
-  currentTopic: "React Hooks",
-  progressPercentage: 62,
-  totalHours: 48,
-};
-
-const MOCK_ASSESSMENTS = [
-  { id: 1, title: "JavaScript Fundamentals Quiz", status: "completed", score: 88, totalScore: 100, date: "Jun 12, 2026" },
-  { id: 2, title: "React Basics Assessment", status: "completed", score: 72, totalScore: 100, date: "Jun 28, 2026" },
-  { id: 3, title: "API Integration Challenge", status: "pending" },
-  { id: 4, title: "Database Design Quiz", status: "pending" },
-];
-
-const MOCK_RECOMMENDATIONS = [
-  {
-    id: 1,
-    type: "Course",
-    title: "Mastering React Hooks",
-    level: "Intermediate",
-    duration: "3h 20m",
-    description: "Deep dive into useState, useEffect, and custom hooks with hands-on exercises.",
-  },
-  {
-    id: 2,
-    type: "Resource",
-    title: "REST API Design Best Practices",
-    level: "Intermediate",
-    duration: "45m read",
-    description: "A guide to designing clean, consistent, and scalable REST APIs.",
-  },
-  {
-    id: 3,
-    type: "Project",
-    title: "Build a Task Manager with Node & React",
-    level: "Advanced",
-    duration: "6h",
-    description: "Apply your skills in a full-stack project combining everything you've learned so far.",
-  },
-];
-
-async function getProgress() {
-  await delay(500);
-  return MOCK_PROGRESS;
-}
-
-async function getAssessments() {
-  await delay(500);
-  return MOCK_ASSESSMENTS;
-}
-
-async function getRecommendations() {
-  await delay(500);
-  return MOCK_RECOMMENDATIONS;
-}
-
-async function submitAssessment(assessmentId) {
-  await delay(600);
-  const assessment = MOCK_ASSESSMENTS.find((a) => a.id === assessmentId);
-  if (assessment) {
-    assessment.status = "completed";
-    assessment.score = Math.floor(Math.random() * 21) + 70; // 70-90
-    assessment.totalScore = 100;
-    assessment.date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  }
-  return { success: true };
-}
-
-// A tiny canned "AI" so the chat feels responsive without a real model call.
-function mockMentorReply(question) {
-  const q = question.toLowerCase();
-  if (q.includes("hook")) {
-    return "React Hooks let you use state and other React features in function components. useState manages local state, and useEffect handles side effects like data fetching. Want a quick example?";
-  }
-  if (q.includes("api") || q.includes("rest")) {
-    return "A REST API organizes access to resources around URLs and HTTP verbs (GET, POST, PUT, DELETE). Keep endpoints resource-based and stateless, and you'll have a solid foundation.";
-  }
-  if (q.includes("progress") || q.includes("how am i doing")) {
-    return `You're at ${MOCK_PROGRESS.progressPercentage}% overall, currently working through "${MOCK_PROGRESS.currentTopic}". Check the Progress tab for the full breakdown!`;
-  }
-  if (q.includes("assessment") || q.includes("quiz") || q.includes("test")) {
-    const pending = MOCK_ASSESSMENTS.filter((a) => a.status === "pending").length;
-    return `You have ${pending} pending assessment${pending === 1 ? "" : "s"}. Head to the Skills tab whenever you're ready to test yourself.`;
-  }
-  if (q.includes("recommend") || q.includes("what should i learn") || q.includes("next")) {
-    return "Based on your progress, I'd suggest starting with \"Mastering React Hooks\" next — check the Recommendations tab for the full list tailored to you.";
-  }
-  if (q.includes("hello") || q.includes("hi") || q.includes("hey")) {
-    return "Hey there! Happy to help with anything — React, APIs, databases, testing, or just figuring out what to learn next.";
-  }
-  return "Good question! While I don't have a live connection right now, I can help with React, JavaScript, APIs, and general study guidance. Try asking about your progress, a pending assessment, or a topic you're stuck on.";
-}
-
-async function sendMessage(question) {
-  await delay(700 + Math.random() * 500);
-  return { response: mockMentorReply(question) };
-}
 
 /**
  * ---------------------------------------------------------------------------
@@ -153,11 +42,16 @@ export default function AIMentor({ user, onNavigate }) {
     setLoading(true);
     setError("");
     try {
-      const [progressData, assessmentsData, recommendationsData] = await Promise.all([
-        getProgress(),
-        getAssessments(),
-        getRecommendations(),
-      ]);
+      const [progressData, assessmentsData, recommendationsData] =
+  await Promise.all([
+    getProgress(),
+    getAssessments(),
+    getRecommendations(),
+  ]);
+
+console.log(progressData);
+console.log(assessmentsData);
+console.log(recommendationsData);
       setLearning(progressData);
       setAssessments(assessmentsData);
       setRecommendations(recommendationsData);

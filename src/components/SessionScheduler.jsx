@@ -1,31 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const initialSessions = [
-  {
-    id: 1,
-    title: "React Basics",
-    date: "2026-07-10",
-    time: "10:00",
-    mentor: "Alicia",
-    status: "scheduled",
-  },
-  {
-    id: 2,
-    title: "Career Guidance",
-    date: "2026-07-12",
-    time: "14:30",
-    mentor: "Daniel",
-    status: "scheduled",
-  },
-  {
-    id: 3,
-    title: "Portfolio Review",
-    date: "2026-07-05",
-    time: "09:00",
-    mentor: "Mina",
-    status: "completed",
-  },
-];
+import {
+  getSessions,
+  createSession,
+  updateSession,
+  deleteSession,
+  completeSession as completeSessionAPI,
+} from "../services/sessionscheduler";
+
+
 
 const emptyForm = {
   id: "",
@@ -37,40 +20,56 @@ const emptyForm = {
 };
 
 export default function SessionScheduler() {
-  const [sessions, setSessions] = useState(initialSessions);
+  const [sessions, setSessions] = useState([]);
+ 
+
+const loadSessions = async () => {
+  try {
+    const data = await getSessions();
+
+   
+
+    setSessions(data);
+  } catch (err) {
+    console.error("Error loading sessions:", err);
+  }
+};
+
+ useEffect(() => {
+  loadSessions();
+}, []);
+
   const [showBooking, setShowBooking] = useState(false);
   const [view, setView] = useState("calendar");
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [formData, setFormData] = useState(emptyForm);
   const [error, setError] = useState("");
 
-  const handleBookSession = (e) => {
-    e.preventDefault();
+const handleBookSession = async (e) => {
+  e.preventDefault();
 
-    if (!formData.title || !formData.date || !formData.time || !formData.mentor) {
-      setError("Please complete all fields before saving the session.");
-      return;
-    }
+  if (!formData.title || !formData.date || !formData.time || !formData.mentor) {
+    setError("Please complete all fields before saving the session.");
+    return;
+  }
 
+  try {
     if (formData.id) {
-      setSessions((prev) =>
-        prev.map((session) => (session.id === formData.id ? { ...session, ...formData } : session))
-      );
+      await updateSession(formData.id, formData);
     } else {
-      setSessions((prev) => [
-        ...prev,
-        {
-          id: Date.now(),
-          ...formData,
-          status: "scheduled",
-        },
-      ]);
+      await createSession(formData);
     }
+
+    await loadSessions();
 
     setFormData(emptyForm);
     setShowBooking(false);
     setError("");
-  };
+  } catch (err) {
+    console.error(err);
+    setError("Unable to save session.");
+  }
+};
 
   const handleReschedule = (id) => {
     const session = sessions.find((item) => item.id === id);
@@ -80,15 +79,23 @@ export default function SessionScheduler() {
     }
   };
 
-  const handleCancel = (id) => {
-    setSessions((prev) => prev.filter((session) => session.id !== id));
-  };
+  const handleCancel = async (id) => {
+  try {
+    await deleteSession(id);
+    await loadSessions();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
-  const completeSession = (id) => {
-    setSessions((prev) =>
-      prev.map((session) => (session.id === id ? { ...session, status: "completed" } : session))
-    );
-  };
+  const completeSession = async (id) => {
+  try {
+    await completeSessionAPI(id);
+    await loadSessions();
+  } catch (err) {
+    console.error(err);
+  }
+};
 
   const upcomingSessions = sessions.filter((session) => session.status === "scheduled");
   const completedSessions = sessions.filter((session) => session.status === "completed");
