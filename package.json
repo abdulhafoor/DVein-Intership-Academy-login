@@ -1,21 +1,14 @@
 {
-  "name": "internship-academy-staff-portal",
-  "private": true,
+  "name": "internship-academy-backend",
   "version": "1.0.0",
-  "type": "module",
+  "description": "Backend for Internship Academy - Dashboard & Program Management (no login required)",
+  "main": "server.js",
   "scripts": {
-    "dev": "node ./node_modules/vite/bin/vite.js --host 127.0.0.1",
-    "build": "node ./node_modules/vite/bin/vite.js build",
-    "preview": "node ./node_modules/vite/bin/vite.js preview"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.3.2",
-    "@vitejs/plugin-react": "^4.2.1",
-    "tailwindcss": "^4.3.2",
-    "vite": "^5.1.0"
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
   }
 }
