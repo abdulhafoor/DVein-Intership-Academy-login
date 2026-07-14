@@ -1,12 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>IMS | Internship Academy Staff Portal</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Internship Academy · Admin</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
+
+  <div class="shell">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="crest">
+        <div class="crest-mark">IA</div>
+        <div class="crest-text">
+          <span class="crest-name">Internship Academy</span>
+          <span class="crest-sub">Administration</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item is-active" data-view="dashboard">
+          <span class="nav-index">01</span> Dashboard
+        </button>
+        <button class="nav-item" data-view="programs">
+          <span class="nav-index">02</span> Programs
+        </button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <p>Register maintained for internal cohort tracking.</p>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+
+      <!-- ===== Dashboard View ===== -->
+      <section id="view-dashboard" class="view is-active">
+        <header class="view-head">
+          <div>
+            <p class="eyebrow">Overview</p>
+            <h1>Dashboard</h1>
+          </div>
+          <button class="btn btn-ghost" id="refresh-dashboard">Refresh</button>
+        </header>
+
+        <div class="stat-row" id="stat-row">
+          <!-- stat cards injected by JS -->
+        </div>
+
+        <div class="dash-grid">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Programs by track</h2>
+              <span class="panel-note">Count &amp; enrollment</span>
+            </div>
+            <div id="track-bars" class="track-bars"></div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Recently added</h2>
+              <span class="panel-note">Latest 5 entries</span>
+            </div>
+            <table class="ledger" id="recent-table">
+              <thead>
+                <tr><th>№</th><th>Program</th><th>Track</th><th>Status</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Ending soon</h2>
+              <span class="panel-note">Active programs by end date</span>
+            </div>
+            <table class="ledger" id="ending-soon-table">
+              <thead>
+                <tr><th>№</th><th>Program</th><th>Ends</th><th>Status</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Programs View ===== -->
+      <section id="view-programs" class="view">
+        <header class="view-head">
+          <div>
+            <p class="eyebrow">Manage</p>
+            <h1>Programs</h1>
+          </div>
+          <button class="btn btn-primary" id="open-create-modal">+ New Program</button>
+        </header>
+
+        <div class="toolbar">
+          <input type="search" id="search-input" placeholder="Search by name, mentor or description…" />
+          <select id="status-filter">
+            <option value="">All statuses</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <div class="panel">
+          <table class="ledger ledger-wide" id="programs-table">
+            <thead>
+              <tr>
+                <th>№</th>
+                <th>Program</th>
+                <th>Track</th>
+                <th>Mentor</th>
+                <th>Dates</th>
+                <th>Enrolled</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <p class="empty-state" id="programs-empty" hidden>No programs match your search — try clearing the filters, or add a new one.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ===== Program Form Modal ===== -->
+  <div class="modal-backdrop" id="modal-backdrop" hidden>
+    <div class="modal">
+      <div class="modal-head">
+        <h2 id="modal-title">New Program</h2>
+        <button class="modal-close" id="modal-close">&times;</button>
+      </div>
+
+      <form id="program-form">
+        <input type="hidden" id="program-id" />
+
+        <div class="field">
+          <label for="f-name">Program name</label>
+          <input type="text" id="f-name" required />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-track">Track</label>
+            <input type="text" id="f-track" placeholder="e.g. Web Development" required />
+          </div>
+          <div class="field">
+            <label for="f-mentor">Mentor</label>
+            <input type="text" id="f-mentor" placeholder="e.g. Ananya Rao" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-description">Description</label>
+          <textarea id="f-description" rows="3"></textarea>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-start">Start date</label>
+            <input type="date" id="f-start" required />
+          </div>
+          <div class="field">
+            <label for="f-end">End date</label>
+            <input type="date" id="f-end" required />
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="f-duration">Duration (weeks)</label>
+            <input type="number" id="f-duration" min="1" required />
+          </div>
+          <div class="field">
+            <label for="f-capacity">Capacity</label>
+            <input type="number" id="f-capacity" min="0" required />
+          </div>
+          <div class="field">
+            <label for="f-enrolled">Enrolled</label>
+            <input type="number" id="f-enrolled" min="0" value="0" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f-status">Status</label>
+          <select id="f-status">
+            <option value="upcoming">Upcoming</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+
+        <p class="form-error" id="form-error" hidden></p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" id="modal-cancel">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="modal-submit">Save Program</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/programs.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
