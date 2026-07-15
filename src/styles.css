@@ -267,6 +267,7 @@ select.status-select{ padding:6px 10px; border-radius:8px; font-size:12.5px; fon
 @media (max-width: 640px){
   .info-grid{ grid-template-columns:1fr; }
 }
+<<<<<<< HEAD
 
 /* ---- MENTOR PERFORMANCE TRACKING ---- */
 .mentor-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(360px, 1fr)); gap:18px; }
@@ -282,3 +283,5 @@ select.status-select{ padding:6px 10px; border-radius:8px; font-size:12.5px; fon
 .mini-chart-bar{ width:100%; max-width:34px; border-radius:5px 5px 0 0; background:linear-gradient(180deg, var(--primary), var(--primary-dark)); min-height:4px; }
 .mini-chart-col span{ font-size:10.5px; color:var(--muted); margin-top:6px; }
 .month-report{ background:var(--primary-light); border-radius:10px; padding:12px 14px; font-size:12.5px; color:var(--text); line-height:1.5; }
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9

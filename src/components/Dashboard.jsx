@@ -104,6 +104,7 @@ export default function Dashboard({ interns, user, onNavigate }) {
             <h3>Auth &amp; Mentor Profile</h3>
             <p>Manage your account &amp; assigned interns</p>
           </button>
+<<<<<<< HEAD
           <button className="quick-card" onClick={() => onNavigate('tech')}>
             <div className="ic-box" style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>💻</div>
             <h3>Tech Management</h3>
@@ -119,6 +120,8 @@ export default function Dashboard({ interns, user, onNavigate }) {
             <h3>Performance Tracking</h3>
             <p>Mentor activity &amp; review status</p>
           </button>
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
         </div>
       </div>
 

@@ -60,6 +60,7 @@ export const mockMentors = [
   { id: 'MNT004', name: 'Dilliraja', email: 'dilliraja@imsacademy.com', phone: '+91 98765 43213', designation: 'Cloud Mentor', department: 'Cloud Computing', domain: 'Cloud Computing', bio: 'Cloud infrastructure mentor focused on AWS, DevOps practices and deployment pipelines.', skills: ['AWS', 'Docker', 'CI/CD', 'Linux'], joinDate: '2023-06-10' }
 ];
 
+<<<<<<< HEAD
 // Monthly performance trend (Apr-Jul 2026) per mentor — used by Mentor
 // Performance Tracking's Performance Chart / Monthly Performance Overview.
 // Values are an overall activity score (0-100) for that month.
@@ -71,6 +72,8 @@ export const mockMentorMonthly = {
   Dilliraja: [55, 60, 52, 48]
 };
 
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
 export const moduleList = [
   { id: 'dashboard', label: 'Dashboard', section: 'Overview', icon: 'grid' },
   { id: 'leave', label: 'Leave Management', section: 'Overview', icon: 'calendar' },

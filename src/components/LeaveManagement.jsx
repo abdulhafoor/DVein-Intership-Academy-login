@@ -124,7 +124,10 @@ export default function LeaveManagement({ interns, setInterns, showToast }) {
                       <option value="Emergency Leave">Emergency Leave</option>
                       <option value="Personal Leave">Personal Leave</option>
                       <option value="Sick Leave">Sick Leave</option>
+<<<<<<< HEAD
                       <option value="Present">Present</option>
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
                     </select>
                   </td>
                   <td>

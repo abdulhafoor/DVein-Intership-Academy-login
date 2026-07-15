@@ -15,16 +15,23 @@ import SessionScheduler from './components/SessionScheduler.jsx';
 import AIMentor from './components/AIMentor.jsx';
 import AssessmentManagement from './components/AssessmentManagement.jsx';
 import Notification from './components/Notification.jsx';
+<<<<<<< HEAD
 import TechManagement from './components/TechManagement.jsx';
 import Announcements from './components/Announcements.jsx';
 import PerformanceTracking from './components/PerformanceTracking.jsx';
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
 import GenericModule from './components/GenericModule.jsx';
 import { fetchInterns, fetchTasks, logout as apiLogout } from './api.js';
 
 const BUILT_VIEWS = [
   'dashboard', 'leave', 'certificate', 'attendance', 'batch', 'report',
+<<<<<<< HEAD
   'task', 'analytics', 'session', 'aimentor', 'assessment', 'notification', 'auth',
   'tech', 'announce', 'performance'
+=======
+  'task', 'analytics', 'session', 'aimentor', 'assessment', 'notification', 'auth'
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
 ];
 
 export default function App() {
@@ -90,9 +97,12 @@ export default function App() {
           {view === 'assessment' && <AssessmentManagement showToast={showToast} />}
           {view === 'notification' && <Notification interns={interns} showToast={showToast} />}
           {view === 'auth' && <AuthMentorProfile user={user} setUser={setUser} interns={interns} showToast={showToast} />}
+<<<<<<< HEAD
           {view === 'tech' && <TechManagement />}
           {view === 'announce' && <Announcements />}
           {view === 'performance' && <PerformanceTracking interns={interns} tasks={tasks} />}
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
           {!BUILT_VIEWS.includes(view) && <GenericModule viewId={view} />}
         </div>
       </div>

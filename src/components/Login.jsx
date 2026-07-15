@@ -59,6 +59,15 @@ export default function Login({ onLogin }) {
             </div>
             <h1>Internship Academy<br /><span>Mentor &amp; HR Portal</span></h1>
             <p>Manage intern attendance, leave records and certificate eligibility — built for mentors and HR only.</p>
+<<<<<<< HEAD
+=======
+            <div className="login-tags">
+              <span>Leave Management</span>
+              <span>Certificate Eligibility</span>
+              <span>Attendance Tracking</span>
+              <span>Analytics</span>
+            </div>
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
           </div>
           <div className="login-foot">Restricted access &middot; Mentor / HR credentials required</div>
         </div>

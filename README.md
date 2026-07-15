@@ -87,9 +87,12 @@ src/
     AIMentor.jsx             # AI mentor chat & learning progress
     AssessmentManagement.jsx # Excel assessment upload & review
     Notification.jsx         # send notifications & view reminders
+<<<<<<< HEAD
     TechManagement.jsx       # inventory, assets & license tracking
     Announcements.jsx        # announcements, messaging & reminders
     PerformanceTracking.jsx  # per-mentor performance dashboard
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
     GenericModule.jsx        # placeholder for not-yet-built modules
     Modals.jsx
 ```
@@ -101,11 +104,18 @@ src/
 - **Dashboard**, **Leave Management**, **Certificate Management**, **Attendance
   Management**, **Batch Management**, **Auth & Mentor Profile**, **Report
   Generation**, **Task Assignment**, **Analytics & Insights**, **Session
+<<<<<<< HEAD
   Scheduler**, **AI Mentor**, **Assessment Management**, **Notification &
   Reminder**, **Tech Management**, **Announcements & Communication**, and
   **Performance Tracking** are fully built (merged from parallel teammate
   branches). Every other module from the module sheet still has a sidebar
   entry and a "coming soon" placeholder in the same shell.
+=======
+  Scheduler**, **AI Mentor**, **Assessment Management**, and **Notification &
+  Reminder** are fully built (merged from parallel teammate branches). Every
+  other module from the module sheet still has a sidebar entry and a
+  "coming soon" placeholder in the same shell.
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
 
 ### Batch Management (single source of truth for the roster)
 
@@ -125,6 +135,7 @@ Assigned Interns (a live roster pulled from the same shared `interns` state,
 matched by mentor name). The login screen now also supports a Mentor role
 and a working Forgot Password flow.
 
+<<<<<<< HEAD
 ### Tech Management, Announcements & Communication, Performance Tracking
 
 Three more self-contained modules:
@@ -138,6 +149,8 @@ Three more self-contained modules:
   monthly overview), computed live from the shared `interns` and `tasks`
   state via `mentorSummaries()` in `utils.js`.
 
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
 ### Attendance Management (mentor domain)
 
 Matches the workflow: *Select Domain → Select Batch → Select Individual Intern →

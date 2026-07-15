@@ -92,6 +92,7 @@ export function performanceScore(i) {
 export function internshipProgressPct(i) {
   return Math.min(100, Math.round((i.present / i.workingDays) * 100));
 }
+<<<<<<< HEAD
 
 // ---------------- MENTOR PERFORMANCE TRACKING ----------------
 
@@ -140,3 +141,5 @@ export function mentorSummaries(interns, tasks, monthlyMap = {}) {
     };
   }).sort((a, b) => b.activityScore - a.activityScore);
 }
+=======
+>>>>>>> 2bed59f0a2e1a836182c496e47b4c8ad49cacfe9
